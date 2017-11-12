@@ -17,6 +17,7 @@
 
 package info.ab.copyfolder;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -25,10 +26,20 @@ import java.io.IOException;
  *
  * @author Aleksei Balan
  */
+@lombok.Getter
+@lombok.Setter
 public class Main {
+
+  private String userName;
 
   public static void main(String[] args) {
     try {
+      try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+        // https://github.com/jacoco/jacoco/pull/500
+        // Case that was already presented in our tests and not filtered -
+        // when body of try-with-resources is empty
+        stream.size();
+      }
 
       // use Apache Commons copyDirectory to copy folder
       org.apache.commons.io.FileUtils.copyDirectory(new File(args[0]), new File(args[1]));
