@@ -17,8 +17,17 @@
 
 package info.ab.copyfolder;
 
+import io.webfolder.cdp.Launcher;
+import io.webfolder.cdp.session.Session;
+import io.webfolder.cdp.session.SessionFactory;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Arrays;
+
+import static java.nio.file.Files.createTempFile;
 
 /**
  * The Class copyfolder.Main.
@@ -27,17 +36,21 @@ import java.io.IOException;
  */
 public class Main {
 
-  public static void main(String[] args) {
-    try {
-
-      // use Apache Commons copyDirectory to copy folder
-      org.apache.commons.io.FileUtils.copyDirectory(new File(args[0]), new File(args[1]));
-
-    } catch (final IOException e) {
-      // rethrow runtime exception
-      throw new IllegalArgumentException(e);
+  public static void main(String[] args) throws IOException {
+    Launcher launcher = new Launcher();
+    try (SessionFactory factory = launcher.launch(Arrays.asList("--headless", "--disable-gpu"))) {
+      String context = factory.createBrowserContext();
+      try (Session session = factory.create(context)) {
+        session.navigate("https://angular.io/");
+        session.waitDocumentReady();
+        session.wait(1000);
+        byte[] content = session
+            .getCommand()
+            .getPage()
+            .printToPDF();
+        FileUtils.writeByteArrayToFile(new File("target/webpage.pdf"), content);
+      }
     }
-
   }
 
 }
